@@ -1,15 +1,19 @@
 import numpy as np
 G = 6.67e-11
+V = 299792458
 
-
-def get_a(i, x, y, planets, k):
-    a = planets[i][k]
+def get_a(i, x, y, planets):
+    a = 0
     #print(i, a)
     #if i == 1:
         #a = 20
     for j in range(len(planets)):
         if i != j:
             a += G * planets[j][6] * (x[j][-1] - x[i][-1]) / (((x[j][-1] - x[i][-1]) ** 2 + (y[j][-1] - y[i][-1]) ** 2) ** 0.5) ** 3
+            #print("DO", a)
+            a -= (planets[i][5] * (x[j][-1] - x[i][-1]) * planets[j][4] /
+                  (((((x[j][-1] - x[i][-1]) ** 2 + (y[j][-1] - y[i][-1]) ** 2) ** 0.5) ** 3) * V * 4 * np.pi * planets[i][6]))
+            #print("AF", a)
     return a
 
 
@@ -34,8 +38,8 @@ def scheme_Euler(time, step_time, planets):
         vx[i].append(planets[i][2])
         vy[i].append(planets[i][3])
     for i in range(n):
-        ax[i].append(get_a(i, x, y, planets, 4))
-        ay[i].append(get_a(i, y, x, planets, 5))
+        ax[i].append(get_a(i, x, y, planets))
+        ay[i].append(get_a(i, y, x, planets))
     t = np.arange(0, time + step_time / 2, step_time)
     for j in range(len(t) - 1):
         for i in range(n):
@@ -44,8 +48,8 @@ def scheme_Euler(time, step_time, planets):
             vx[i].append(vx[i][-1] + ax[i][-1] * step_time)
             vy[i].append(vy[i][-1] + ay[i][-1] * step_time)
         for i in range(n):
-            ax[i].append(get_a(i, x, y, planets, 4))
-            ay[i].append(get_a(i, y, x, planets, 5))
+            ax[i].append(get_a(i, x, y, planets))
+            ay[i].append(get_a(i, y, x, planets))
     return t, x, y, vx, vy
 
 
@@ -70,8 +74,8 @@ def scheme_Euler_Kramer(time, step_time, planets):
         vx[i].append(planets[i][2])
         vy[i].append(planets[i][3])
     for i in range(n):
-        ax[i].append(get_a(i, x, y, planets, 4))
-        ay[i].append(get_a(i, y, x, planets, 5))
+        ax[i].append(get_a(i, x, y, planets))
+        ay[i].append(get_a(i, y, x, planets))
     t = np.arange(0, time + step_time / 2, step_time)
     for j in range(len(t) - 1):
         for i in range(n):
@@ -80,8 +84,8 @@ def scheme_Euler_Kramer(time, step_time, planets):
             x[i].append(x[i][-1] + vx[i][-1] * step_time)
             y[i].append(y[i][-1] + vy[i][-1] * step_time)
         for i in range(n):
-            ax[i].append(get_a(i, x, y, planets, 4))
-            ay[i].append(get_a(i, y, x, planets, 5))
+            ax[i].append(get_a(i, x, y, planets))
+            ay[i].append(get_a(i, y, x, planets))
     return t, x, y, vx, vy
 
 
@@ -106,8 +110,8 @@ def scheme_Verle(time, step_time, planets):
         vx[i].append(planets[i][2])
         vy[i].append(planets[i][3])
     for i in range(n):
-        ax[i].append(get_a(i, x, y, planets, 4))
-        ay[i].append(get_a(i, y, x, planets, 5))
+        ax[i].append(get_a(i, x, y, planets))
+        ay[i].append(get_a(i, y, x, planets))
     t = np.arange(0, time + step_time / 2, step_time)
     for i in range(n):
         x[i].append(x[i][-1] + vx[i][-1] * step_time)
@@ -115,14 +119,14 @@ def scheme_Verle(time, step_time, planets):
         vx[i].append(vx[i][-1] + ax[i][-1] * step_time)
         vy[i].append(vy[i][-1] + ay[i][-1] * step_time)
     for i in range(n):
-        ax[i].append(get_a(i, x, y, planets, 4))
-        ay[i].append(get_a(i, y, x, planets, 5))
+        ax[i].append(get_a(i, x, y, planets))
+        ay[i].append(get_a(i, y, x, planets))
     for i in range(n):
         x[i].append(2 * x[i][-1] - x[i][-2] + ax[i][-1] * step_time ** 2)
         y[i].append(2 * y[i][-1] - y[i][-2] + ay[i][-1] * step_time ** 2)
     for i in range(n):
-        ax[i].append(get_a(i, x, y, planets, 4))
-        ay[i].append(get_a(i, y, x, planets, 5))
+        ax[i].append(get_a(i, x, y, planets))
+        ay[i].append(get_a(i, y, x, planets))
     for j in range(len(t) - 3):
         for i in range(n):
             x[i].append(2 * x[i][-1] - x[i][-2] + ax[i][-1] * step_time ** 2)
@@ -130,8 +134,8 @@ def scheme_Verle(time, step_time, planets):
             vx[i].append((x[i][-1] - x[i][-3]) / (2 * step_time))
             vy[i].append((y[i][-1] - y[i][-3]) / (2 * step_time))
         for i in range(n):
-            ax[i].append(get_a(i, x, y, planets, 4))
-            ay[i].append(get_a(i, y, x, planets, 5))
+            ax[i].append(get_a(i, x, y, planets))
+            ay[i].append(get_a(i, y, x, planets))
     for i in range(n):
         vx[i].append((x[i][-1] - x[i][-3]) / (2 * step_time))
         vy[i].append((y[i][-1] - y[i][-3]) / (2 * step_time))
@@ -162,8 +166,8 @@ def scheme_Biman(time, step_time, planets):
         vx[i].append(planets[i][2])
         vy[i].append(planets[i][3])
     for i in range(n):
-        ax[i].append(get_a(i, x, y, planets, 4))
-        ay[i].append(get_a(i, y, x, planets, 5))
+        ax[i].append(get_a(i, x, y, planets))
+        ay[i].append(get_a(i, y, x, planets))
     t = np.arange(0, time + step_time / 2, step_time)
     for i in range(n):
         x[i].append(x[i][-1] + vx[i][-1] * step_time)
@@ -171,15 +175,15 @@ def scheme_Biman(time, step_time, planets):
         vx[i].append(vx[i][-1] + ax[i][-1] * step_time)
         vy[i].append(vy[i][-1] + ay[i][-1] * step_time)
     for i in range(n):
-        ax[i].append(get_a(i, x, y, planets, 4))
-        ay[i].append(get_a(i, y, x, planets, 5))
+        ax[i].append(get_a(i, x, y, planets))
+        ay[i].append(get_a(i, y, x, planets))
     for j in range(len(t) - 2):
         for i in range(n):
             x[i].append(x[i][-1] + vx[i][-1] * step_time - ((4 * ax[i][-1] - ax[i][-2]) * step_time ** 2) / 6)
             y[i].append(y[i][-1] + vy[i][-1] * step_time - ((4 * ay[i][-1] - ay[i][-2]) * step_time ** 2) / 6)
         for i in range(n):
-            ax[i].append(get_a(i, x, y, planets, 4))
-            ay[i].append(get_a(i, y, x, planets, 5))
+            ax[i].append(get_a(i, x, y, planets))
+            ay[i].append(get_a(i, y, x, planets))
         for i in range(n):
             vx[i].append(vx[i][-1] + (2 * ax[i][-1] + 5 * ax[i][-2] - ax[i][-3]) * step_time / 6)
             vy[i].append(vy[i][-1] + (2 * ay[i][-1] + 5 * ay[i][-2] - ay[i][-3]) * step_time / 6)
