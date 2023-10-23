@@ -51,8 +51,10 @@ def chart(win, time, step_time, scheme, planets):
             new_file.close()
 
     def animate_func(num):
-        global button
-        if num % 100 == 0 or num == len(x[0]) - 1:
+            global button, line_ani
+            num *= n
+            if num >= frames_all:
+                num = frames_all - 1
             ax.clear()  # Очищаем фигуру для обновления линии, точки,
             # заголовка и осей  # Обновляем линию траектории (num+1 из-за индексации Python)
             for i in range(len(planets)):
@@ -77,6 +79,9 @@ def chart(win, time, step_time, scheme, planets):
             button.on_clicked(save_data)
 
     t, x, y, vx, vy = scheme_type[scheme](time, step_time, planets)
+    n = 50
+    frames_all = len(t)
+    frames = frames_all // n + 2
     general_m = sum([i[6] for i in planets])
     xmin = xmax = x[0][0]
     ymin = ymax = y[0][0]
@@ -94,7 +99,7 @@ def chart(win, time, step_time, scheme, planets):
     ax = plt.axes()
     x_button = plt.axes((0.75, 0.005, 0.15, 0.04))
     line_ani = animation.FuncAnimation(fig, animate_func, interval=1,
-                                       frames=len(x[0]), repeat=False)
+                                       frames=frames, repeat=False, cache_frame_data=False)
     canvas = FigureCanvasTkAgg(fig, master=win)
     canvas.draw()
 
